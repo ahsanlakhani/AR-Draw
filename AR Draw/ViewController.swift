@@ -7,19 +7,28 @@
 //
 
 import UIKit
+import ARKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, ARSCNViewDelegate {
+    
+    @IBOutlet weak var sceneView: ARSCNView!
+    let configuration = ARWorldTrackingConfiguration()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-    }
+        
+        self.sceneView.session.run(configuration)
+        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
+        self.sceneView.showsStatistics = true
+        self.sceneView.delegate = self
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
-
+    
+    //this is the ARSCNViewDelegate function that will help us to draw in app
+    //this delegate function gets called everytime a view is about to render a scene so it will be called constatntly
+    func renderer(_ renderer: SCNSceneRenderer, willRenderScene scene: SCNScene, atTime time: TimeInterval) {
+        print("rendering")
+    }
 
 }
 
