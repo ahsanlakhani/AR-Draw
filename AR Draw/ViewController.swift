@@ -14,15 +14,15 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     @IBOutlet weak var draw: UIButton!
     @IBOutlet weak var sceneView: ARSCNView!
     let configuration = ARWorldTrackingConfiguration()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.sceneView.session.run(configuration)
-        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
-        self.sceneView.showsStatistics = true
+        //        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
+        //        self.sceneView.showsStatistics = true
         self.sceneView.delegate = self
-
+        
     }
     
     //this is the ARSCNViewDelegate function that will help us to draw in app
@@ -46,23 +46,35 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let cameraCurrentPosition =  orientation + location
         
         //now start drawing
-        if draw.isHighlighted {
-            let sphere = SCNNode(geometry: SCNSphere(radius: 0.01))
-            sphere.position = cameraCurrentPosition
-            sphere.geometry?.firstMaterial?.diffuse.contents = UIColor.red
-            self.sceneView.scene.rootNode.addChildNode(sphere)
+        //everything in renderer function happens in the background thread so here we want to perform this in main thread
+        DispatchQueue.main.async {
+            if self.draw.isHighlighted {
+                let sphere = SCNNode(geometry: SCNSphere(radius: 0.02))
+                sphere.position = cameraCurrentPosition
+                sphere.geometry?.firstMaterial?.diffuse.contents = UIColor.red
+                self.sceneView.scene.rootNode.addChildNode(sphere)
+            } else {
+                let pointer = SCNNode(geometry: SCNSphere(radius: 0.01))
+                pointer.name = "pointer"
+                pointer.position = cameraCurrentPosition
+                pointer.geometry?.firstMaterial?.diffuse.contents = UIColor.red
+                
+                self.sceneView.scene.rootNode.enumerateChildNodes({ (node, _) in
+                    if node.name == "pointer"{
+                        node.removeFromParentNode()
+                    }
+                })
+                
+                self.sceneView.scene.rootNode.addChildNode(pointer)
+            }
+            
+            
         }
         
-        
-        
-        
-        
-        
-        
     }
-
+    
 }
-
+//we cannot perform addition between two vectors so we have to make this function
 func +(left: SCNVector3, right: SCNVector3) -> SCNVector3 {
     return SCNVector3Make(left.x + right.x, left.y + right.y, left.z + right.z)
 }
